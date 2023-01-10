@@ -1,17 +1,28 @@
-from django.shortcuts import render
 from rest_framework import viewsets
+from django.shortcuts import render
+from django.http import JsonResponse
 from .models import Character
 from .serializers import CharacterSerializer
-from django.http import HttpResponse
 
 class CharacterViewSet(viewsets.ModelViewSet):
     queryset = Character.objects.all()
     serializer_class = CharacterSerializer
 
 def my_view(request):
-    name = request.GET.get('name')
+    character_name = request.GET.get('name')
+    characters = Character.objects.filter(name=character_name).values(name, species, status, episode)
     
-    if name:
-        return HttpResponse(f'Hello, {name}!')
+    print(f"Todos los personajes: {characters}")
+    
+    if character_name:
+        for character in characters:
+            name, species, status, episode = character
+
+        # data = [{'name': name, 'species': species, 'status': status, 'episode': episode}]
+        print(data)
+        data = [{'name': character.name, 'species': character.species, 'status': character.status, 'episode': character.episode}]
+        
+        return JsonResponse(data, safe=False, content_type='application/json')
     else:
-        return HttpResponse('Hello, anonymous!')
+        data = 'No variable passed as GET'
+        return JsonResponse(data, safe=False, content_type='application/json')
